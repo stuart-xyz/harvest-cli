@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"harvest-cli/model"
+	"harvest-cli/services"
 	"os"
-	"os/exec"
 
 	"github.com/docopt/docopt-go"
 	"gopkg.in/yaml.v2"
@@ -34,25 +34,27 @@ func main() {
 func executeCommand(opts docopt.Opts) (err error) {
 	if isLog, _ := opts.Bool("log"); isLog {
 		ticketRef, _ := opts.String("<ticket_ref>")
-		ticketSummary, err := runInSystem("jira", []string{"view", ticketRef})
+		ticketSummary, err := services.RunInSystem("jira", []string{"view", ticketRef})
 		if err != nil {
 			return err
 		}
+
 		var jiraTicket model.JiraTicket
 		err = yaml.Unmarshal(ticketSummary, &jiraTicket)
 		if err != nil {
 			return err
 		}
-		fmt.Println(jiraTicket)
-	}
-	return
-}
 
-func runInSystem(script string, args []string) (output []byte, err error) {
-	osCommand := exec.Command(script, args...)
-	output, err = osCommand.Output()
-	if err != nil {
-		return nil, err
+		tasks, err := services.FuzzyMatchTicketKeywords(jiraTicket)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("Enter the number of the correct task, or enter a string to search for other tasks")
+		for index, task := range tasks {
+			fmt.Printf("[%d] %s\n", index, task.Description)
+		}
 	}
-	return output, nil
+
+	return
 }
