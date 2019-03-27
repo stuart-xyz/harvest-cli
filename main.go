@@ -17,7 +17,7 @@ func main() {
 	usage := `Harvest CLI.
 
     Usage:
-      harvest log <ticket_ref> <hours>...
+      harvest log <ticket_ref> <hours>
       harvest -h | --help
       harvest --version
 
