@@ -7,7 +7,7 @@ Integrates with JIRA to automate time recording against tickets.
 1. Install JIRA CLI
 2. Download + build source
 3. Generate a personal access token in Harvest
-4. Edit `$HOME/.jira.d/config.yml` and add an entry `harvest-personal-access-token: $TOKEN`
+4. Edit `$HOME/.jira.d/config.yml` and add the entries `harvest-personal-access-token: $TOKEN` and `harvest-account-id: $ACCOUNT_ID`
 5. Add Harvest task list to `$HOME/.jira.d/harvest-task-list.csv` with the following CSV format:
 
   ```
@@ -18,7 +18,7 @@ Integrates with JIRA to automate time recording against tickets.
 
 ```
 Usage:
-  harvest log <ticket_ref> <category> <time>...
+  harvest log <ticket_ref> <hours>...
   harvest -h | --help
   harvest --version
 
