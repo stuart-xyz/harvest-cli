@@ -36,8 +36,15 @@ func main() {
 
 func executeCommand(opts docopt.Opts) (err error) {
 	if isLog, _ := opts.Bool("log"); isLog {
-		ticketReference, _ := opts.String("<ticket_ref>")
-		hours, _ := opts.Float64("<hours>")
+		ticketReference, err := opts.String("<ticket_ref>")
+		if err != nil {
+			return err
+		}
+
+		hours, err := opts.Float64("<hours>")
+		if err != nil {
+			return err
+		}
 
 		jiraTicket, err := services.GetJiraTicket(ticketReference)
 		if err != nil {
