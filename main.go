@@ -44,26 +44,34 @@ func executeCommand(opts docopt.Opts) (err error) {
 			return err
 		}
 
-		tasks, err := services.FuzzyMatchTicketKeywords(jiraTicket)
-		if err != nil {
-			return err
-		}
-
-		fmt.Println("Enter the number of the correct task, or enter a string to search for other tasks")
-		for index, task := range tasks {
-			fmt.Printf("[%d] %s\n", index, task.Description)
-		}
-
-		consoleReader := bufio.NewReader(os.Stdin)
-		fmt.Println()
-		input, _ := consoleReader.ReadString('\n')
-		strippedInput := strings.TrimSuffix(input, "\n")
-
+		jiraTicketToFuzzyMatch := jiraTicket
 		var selectedTask model.Task
-		if index, err := strconv.Atoi(strippedInput); err == nil {
-			selectedTask = tasks[index]
-		} else {
-			fmt.Println("Not a number")
+		for {
+			tasks, err := services.FuzzyMatchTicket(jiraTicketToFuzzyMatch)
+			if err != nil {
+				return err
+			}
+
+			fmt.Println("Enter the number of the correct task, or enter a string to search for other tasks")
+			for index, task := range tasks {
+				fmt.Printf("[%d] %s\n", index, task.Description)
+			}
+
+			consoleReader := bufio.NewReader(os.Stdin)
+			fmt.Println()
+			input, _ := consoleReader.ReadString('\n')
+			strippedInput := strings.TrimSuffix(input, "\n")
+
+			if index, err := strconv.Atoi(strippedInput); err == nil {
+				selectedTask = tasks[index]
+				break
+			} else {
+				jiraTicketToFuzzyMatch = model.JiraTicket{
+					Project: jiraTicket.Project,
+					Summary: strippedInput,
+					Labels:  "",
+				}
+			}
 		}
 
 		config, err := services.GetConfig()

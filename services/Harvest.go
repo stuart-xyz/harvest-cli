@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"harvest-cli/model"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 
 	"github.com/schollz/closestmatch"
 )
 
-func FuzzyMatchTicketKeywords(ticket model.JiraTicket) (tasks []model.Task, err error) {
+func FuzzyMatchTicket(ticket model.JiraTicket) (tasks []model.Task, err error) {
 	taskIndex, taskIndexKeys, err := buildTaskIndex()
 	if err != nil {
 		return []model.Task{}, err
@@ -59,9 +58,6 @@ func LogTime(config model.Config, task model.Task, timeBlock model.TimeBlock) (s
 	if err != nil {
 		return -1, err
 	}
-
-	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(bodyBytes))
 
 	return resp.StatusCode, nil
 }
