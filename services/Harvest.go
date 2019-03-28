@@ -31,8 +31,8 @@ func FuzzyMatchTicket(ticket model.JiraTicket) (tasks []model.Task, err error) {
 
 func LogTime(config model.Config, task model.Task, timeBlock model.TimeBlock) (statusCode int, err error) {
 	externalRef := model.ExternalReference{
-		Id:        "37857",
-		GroupId:   "11800",
+		Id:        strconv.Itoa(task.TaskId),
+		GroupId:   strconv.Itoa(task.ProjectId),
 		Permalink: timeBlock.Url,
 	}
 	logTimeRequest := model.LogTimeRequest{
