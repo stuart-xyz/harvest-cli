@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/csv"
+	"fmt"
 	"harvest-cli/model/harvest"
 	"io"
 	"io/ioutil"
@@ -11,8 +12,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func GetConfig() (config Config, err error) {
-	configFile, err := ioutil.ReadFile("/Users/stuart/.jira.d/config.yml")
+func GetConfig(homeDir string) (config Config, err error) {
+	configFile, err := ioutil.ReadFile(fmt.Sprintf("%s/.jira.d/config.yml", homeDir))
 	if err != nil {
 		return Config{}, err
 	}
@@ -25,8 +26,8 @@ func GetConfig() (config Config, err error) {
 	return config, nil
 }
 
-func buildTaskIndex() (taskIndex map[string]harvest.Task, taskIndexKeys []string, err error) {
-	csvfile, err := os.Open("/Users/stuart/.jira.d/harvest-task-list.csv")
+func BuildTaskIndex(homeDir string) (taskIndex map[string]harvest.Task, taskIndexKeys []string, err error) {
+	csvfile, err := os.Open(fmt.Sprintf("%s/.jira.d/harvest-task-list.csv", homeDir))
 	if err != nil {
 		return nil, nil, err
 	}

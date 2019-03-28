@@ -12,12 +12,7 @@ import (
 	"github.com/schollz/closestmatch"
 )
 
-func FuzzyMatchTicket(ticket jira.Ticket) (tasks []harvest.Task, err error) {
-	taskIndex, taskIndexKeys, err := buildTaskIndex()
-	if err != nil {
-		return []harvest.Task{}, err
-	}
-
+func FuzzyMatchTicket(taskIndex map[string]harvest.Task, taskIndexKeys []string, ticket jira.Ticket) (tasks []harvest.Task, err error) {
 	bagSizes := []int{2}
 	closestMatchModel := closestmatch.New(taskIndexKeys, bagSizes)
 	closestMatches := closestMatchModel.ClosestN(fmt.Sprintf("%s %s %s", ticket.ProjectKey, ticket.Summary, ticket.Labels), 3)

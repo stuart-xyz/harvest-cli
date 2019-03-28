@@ -6,7 +6,9 @@ import (
 	"harvest-cli/model/harvest"
 	"harvest-cli/model/jira"
 	"harvest-cli/services"
+	"log"
 	"os"
+	"os/user"
 	"strconv"
 	"strings"
 	"time"
@@ -30,7 +32,7 @@ func main() {
 
 	err := executeCommand(opts)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 		os.Exit(1)
 	}
 }
@@ -41,8 +43,11 @@ func executeCommand(opts docopt.Opts) (err error) {
 		if err != nil {
 			return err
 		}
-
 		hours, err := opts.Float64("<hours>")
+		if err != nil {
+			return err
+		}
+		user, err := user.Current()
 		if err != nil {
 			return err
 		}
@@ -52,10 +57,15 @@ func executeCommand(opts docopt.Opts) (err error) {
 			return err
 		}
 
+		taskIndex, taskIndexKeys, err := services.BuildTaskIndex(user.HomeDir)
+		if err != nil {
+			return err
+		}
+
 		jiraTicketToFuzzyMatch := jiraTicket
 		var selectedTask harvest.Task
 		for {
-			tasks, err := services.FuzzyMatchTicket(jiraTicketToFuzzyMatch)
+			tasks, err := services.FuzzyMatchTicket(taskIndex, taskIndexKeys, jiraTicketToFuzzyMatch)
 			if err != nil {
 				return err
 			}
@@ -84,7 +94,7 @@ func executeCommand(opts docopt.Opts) (err error) {
 			}
 		}
 
-		config, err := services.GetConfig()
+		config, err := services.GetConfig(user.HomeDir)
 		if err != nil {
 			return err
 		}
