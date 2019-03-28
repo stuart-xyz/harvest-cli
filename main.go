@@ -90,7 +90,7 @@ func executeCommand(opts docopt.Opts) (err error) {
 			Date:  time.Now().Format("2006-01-02"),
 			Hours: hours,
 			Note:  fmt.Sprintf("%s: %s", ticketReference, jiraTicket.Summary),
-			Url:   fmt.Sprintf("%s/browse/%s", config.JiraEndpoint, ticketReference),
+			Url:   fmt.Sprintf("%s/secure/RapidBoard.jspa?rapidView=35&projectKey=DEV&modal=detail&selectedIssue=%s", config.JiraEndpoint, ticketReference),
 		}
 
 		statusCode, err := services.LogTime(config, selectedTask, timeBlock)
