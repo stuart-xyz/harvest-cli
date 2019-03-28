@@ -1,6 +1,6 @@
-package model
+package jira
 
-type JiraTicket struct {
+type Ticket struct {
 	Project string
 	Summary string
 	Labels  string

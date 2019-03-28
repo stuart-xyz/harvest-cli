@@ -1,4 +1,4 @@
-package model
+package harvest
 
 type Task struct {
 	ProjectId   int

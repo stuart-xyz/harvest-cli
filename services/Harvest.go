@@ -4,24 +4,25 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"harvest-cli/model"
+	"harvest-cli/model/harvest"
+	"harvest-cli/model/jira"
 	"net/http"
 	"strconv"
 
 	"github.com/schollz/closestmatch"
 )
 
-func FuzzyMatchTicket(ticket model.JiraTicket) (tasks []model.Task, err error) {
+func FuzzyMatchTicket(ticket jira.Ticket) (tasks []harvest.Task, err error) {
 	taskIndex, taskIndexKeys, err := buildTaskIndex()
 	if err != nil {
-		return []model.Task{}, err
+		return []harvest.Task{}, err
 	}
 
 	bagSizes := []int{2}
 	closestMatchModel := closestmatch.New(taskIndexKeys, bagSizes)
 	closestMatches := closestMatchModel.ClosestN(fmt.Sprintf("%s %s %s", ticket.Project, ticket.Summary, ticket.Labels), 3)
 
-	closestMatchingTasks := []model.Task{}
+	closestMatchingTasks := []harvest.Task{}
 	for _, key := range closestMatches {
 		closestMatchingTasks = append(closestMatchingTasks, taskIndex[key])
 	}
@@ -29,13 +30,13 @@ func FuzzyMatchTicket(ticket model.JiraTicket) (tasks []model.Task, err error) {
 	return closestMatchingTasks, nil
 }
 
-func LogTime(config model.Config, task model.Task, timeBlock model.TimeBlock) (statusCode int, err error) {
-	externalRef := model.ExternalReference{
+func LogTime(config Config, task harvest.Task, timeBlock harvest.TimeBlock) (statusCode int, err error) {
+	externalRef := harvest.ExternalReference{
 		Id:        strconv.Itoa(task.TaskId),
 		GroupId:   strconv.Itoa(task.ProjectId),
 		Permalink: timeBlock.Url,
 	}
-	logTimeRequest := model.LogTimeRequest{
+	logTimeRequest := harvest.LogTimeRequest{
 		ProjectId:   task.ProjectId,
 		TaskId:      task.TaskId,
 		Date:        timeBlock.Date,

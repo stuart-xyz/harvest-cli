@@ -1,4 +1,4 @@
-package model
+package harvest
 
 type TimeBlock struct {
 	Date  string

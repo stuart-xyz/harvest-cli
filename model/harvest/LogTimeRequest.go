@@ -1,4 +1,4 @@
-package model
+package harvest
 
 type LogTimeRequest struct {
 	ProjectId   int               `json:"project_id"`

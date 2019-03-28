@@ -1,4 +1,4 @@
-package model
+package harvest
 
 type ExternalReference struct {
 	Id        string `json:"id"`

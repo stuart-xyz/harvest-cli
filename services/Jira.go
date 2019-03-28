@@ -1,20 +1,27 @@
 package services
 
 import (
-	"harvest-cli/model"
-
-	"gopkg.in/yaml.v2"
+	"encoding/json"
+	"harvest-cli/model/jira"
+	"strings"
 )
 
-func GetJiraTicket(reference string) (ticket model.JiraTicket, err error) {
-	ticketSummary, err := runInSystem("jira", []string{"view", reference})
+func GetJiraTicket(reference string) (ticket jira.Ticket, err error) {
+	jsonResponse, err := runInSystem("jira", []string{"view", reference, "-t json"})
 	if err != nil {
-		return model.JiraTicket{}, err
+		return jira.Ticket{}, err
 	}
 
-	err = yaml.Unmarshal(ticketSummary, &ticket)
+	var response jira.Response
+	err = json.Unmarshal(jsonResponse, &response)
 	if err != nil {
-		return model.JiraTicket{}, err
+		return jira.Ticket{}, err
+	}
+
+	ticket = jira.Ticket{
+		Project: response.Fields.Project.Key,
+		Summary: response.Fields.Summary,
+		Labels:  strings.Join(response.Fields.Labels, ","),
 	}
 
 	return ticket, nil

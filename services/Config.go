@@ -1,4 +1,4 @@
-package model
+package services
 
 type Config struct {
 	JiraEndpoint     string `yaml:"endpoint"`

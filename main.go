@@ -3,7 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"harvest-cli/model"
+	"harvest-cli/model/harvest"
+	"harvest-cli/model/jira"
 	"harvest-cli/services"
 	"os"
 	"strconv"
@@ -52,7 +53,7 @@ func executeCommand(opts docopt.Opts) (err error) {
 		}
 
 		jiraTicketToFuzzyMatch := jiraTicket
-		var selectedTask model.Task
+		var selectedTask harvest.Task
 		for {
 			tasks, err := services.FuzzyMatchTicket(jiraTicketToFuzzyMatch)
 			if err != nil {
@@ -73,7 +74,7 @@ func executeCommand(opts docopt.Opts) (err error) {
 				selectedTask = tasks[index]
 				break
 			} else {
-				jiraTicketToFuzzyMatch = model.JiraTicket{
+				jiraTicketToFuzzyMatch = jira.Ticket{
 					Project: jiraTicket.Project,
 					Summary: strippedInput,
 					Labels:  "",
@@ -86,7 +87,7 @@ func executeCommand(opts docopt.Opts) (err error) {
 			return err
 		}
 
-		timeBlock := model.TimeBlock{
+		timeBlock := harvest.TimeBlock{
 			Date:  time.Now().Format("2006-01-02"),
 			Hours: hours,
 			Note:  fmt.Sprintf("%s: %s", ticketReference, jiraTicket.Summary),
