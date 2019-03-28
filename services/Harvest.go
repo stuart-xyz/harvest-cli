@@ -20,7 +20,7 @@ func FuzzyMatchTicket(ticket jira.Ticket) (tasks []harvest.Task, err error) {
 
 	bagSizes := []int{2}
 	closestMatchModel := closestmatch.New(taskIndexKeys, bagSizes)
-	closestMatches := closestMatchModel.ClosestN(fmt.Sprintf("%s %s %s", ticket.Project, ticket.Summary, ticket.Labels), 3)
+	closestMatches := closestMatchModel.ClosestN(fmt.Sprintf("%s %s %s", ticket.ProjectKey, ticket.Summary, ticket.Labels), 3)
 
 	closestMatchingTasks := []harvest.Task{}
 	for _, key := range closestMatches {
@@ -31,18 +31,13 @@ func FuzzyMatchTicket(ticket jira.Ticket) (tasks []harvest.Task, err error) {
 }
 
 func LogTime(config Config, task harvest.Task, timeBlock harvest.TimeBlock) (statusCode int, err error) {
-	externalRef := harvest.ExternalReference{
-		Id:        strconv.Itoa(task.TaskId),
-		GroupId:   strconv.Itoa(task.ProjectId),
-		Permalink: timeBlock.Url,
-	}
 	logTimeRequest := harvest.LogTimeRequest{
 		ProjectId:   task.ProjectId,
 		TaskId:      task.TaskId,
 		Date:        timeBlock.Date,
 		Hours:       timeBlock.Hours,
 		Note:        timeBlock.Note,
-		ExternalRef: externalRef,
+		ExternalRef: timeBlock.ExternalRef,
 	}
 	json, err := json.Marshal(logTimeRequest)
 	if err != nil {

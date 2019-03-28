@@ -75,9 +75,11 @@ func executeCommand(opts docopt.Opts) (err error) {
 				break
 			} else {
 				jiraTicketToFuzzyMatch = jira.Ticket{
-					Project: jiraTicket.Project,
-					Summary: strippedInput,
-					Labels:  "",
+					Id:         "",
+					ProjectId:  "",
+					ProjectKey: jiraTicket.ProjectKey,
+					Summary:    strippedInput,
+					Labels:     "",
 				}
 			}
 		}
@@ -91,7 +93,16 @@ func executeCommand(opts docopt.Opts) (err error) {
 			Date:  time.Now().Format("2006-01-02"),
 			Hours: hours,
 			Note:  fmt.Sprintf("%s: %s", ticketReference, jiraTicket.Summary),
-			Url:   fmt.Sprintf("%s/secure/RapidBoard.jspa?rapidView=35&projectKey=DEV&modal=detail&selectedIssue=%s", config.JiraEndpoint, ticketReference),
+			ExternalRef: harvest.ExternalReference{
+				Id:      jiraTicket.Id,
+				GroupId: jiraTicket.ProjectId,
+				Permalink: fmt.Sprintf(
+					"%s/secure/RapidBoard.jspa?rapidView=35&projectKey=%s&modal=detail&selectedIssue=%s",
+					config.JiraEndpoint,
+					jiraTicket.ProjectKey,
+					ticketReference,
+				),
+			},
 		}
 
 		statusCode, err := services.LogTime(config, selectedTask, timeBlock)

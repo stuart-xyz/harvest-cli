@@ -1,7 +1,9 @@
 package jira
 
 type Ticket struct {
-	Project string
-	Summary string
-	Labels  string
+	Id         string
+	ProjectId  string
+	ProjectKey string
+	Summary    string
+	Labels     string
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func GetJiraTicket(reference string) (ticket jira.Ticket, err error) {
-	jsonResponse, err := runInSystem("jira", []string{"view", reference, "-t json"})
+	jsonResponse, err := runInSystem("jira", []string{"view", reference, "-t", "json"})
 	if err != nil {
 		return jira.Ticket{}, err
 	}
@@ -19,9 +19,11 @@ func GetJiraTicket(reference string) (ticket jira.Ticket, err error) {
 	}
 
 	ticket = jira.Ticket{
-		Project: response.Fields.Project.Key,
-		Summary: response.Fields.Summary,
-		Labels:  strings.Join(response.Fields.Labels, ","),
+		Id:         response.Id,
+		ProjectId:  response.Fields.Project.Id,
+		ProjectKey: response.Fields.Project.Key,
+		Summary:    response.Fields.Summary,
+		Labels:     strings.Join(response.Fields.Labels, ","),
 	}
 
 	return ticket, nil
