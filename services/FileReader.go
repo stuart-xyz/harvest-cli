@@ -13,7 +13,7 @@ import (
 )
 
 func GetConfig(homeDir string) (config Config, err error) {
-	configFile, err := ioutil.ReadFile(fmt.Sprintf("%s/.jira.d/config.yml", homeDir))
+	configFile, err := ioutil.ReadFile(fmt.Sprintf("%s/.harvest.d/config.yml", homeDir))
 	if err != nil {
 		return Config{}, err
 	}
@@ -27,7 +27,7 @@ func GetConfig(homeDir string) (config Config, err error) {
 }
 
 func BuildTaskIndex(homeDir string) (taskIndex map[string]harvest.Task, taskIndexKeys []string, err error) {
-	csvfile, err := os.Open(fmt.Sprintf("%s/.jira.d/harvest-task-list.csv", homeDir))
+	csvfile, err := os.Open(fmt.Sprintf("%s/.harvest.d/task-list.csv", homeDir))
 	if err != nil {
 		return nil, nil, err
 	}

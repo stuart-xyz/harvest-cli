@@ -1,30 +1,32 @@
 package services
 
 import (
-	"encoding/json"
-	"harvest-cli/model/jira"
+	jiramodel "harvest-cli/model/jira"
 	"strings"
+
+	"gopkg.in/Netflix-Skunkworks/go-jira.v1"
 )
 
-func GetJiraTicket(reference string) (ticket jira.Ticket, err error) {
-	jsonResponse, err := runInSystem("jira", []string{"view", reference, "-t", "json"})
+func GetIssue(httpClient jira.HttpClient, config Config, reference string) (issue jiramodel.Issue, err error) {
+	jsonIssue, err := jira.GetIssue(httpClient, config.JiraEndpoint, reference, nil)
 	if err != nil {
-		return jira.Ticket{}, err
+		return jiramodel.Issue{}, err
 	}
 
-	var response jira.Response
-	err = json.Unmarshal(jsonResponse, &response)
-	if err != nil {
-		return jira.Ticket{}, err
+	var labels []string
+	rawLabels := jsonIssue.Fields["labels"].([]interface{})
+	for _, rawLabel := range rawLabels {
+		label := rawLabel.(string)
+		labels = append(labels, label)
 	}
 
-	ticket = jira.Ticket{
-		Id:         response.Id,
-		ProjectId:  response.Fields.Project.Id,
-		ProjectKey: response.Fields.Project.Key,
-		Summary:    response.Fields.Summary,
-		Labels:     strings.Join(response.Fields.Labels, ","),
+	issue = jiramodel.Issue{
+		Id:         jsonIssue.ID,
+		ProjectId:  jsonIssue.Fields["project"].(map[string]interface{})["id"].(string),
+		ProjectKey: jsonIssue.Fields["project"].(map[string]interface{})["key"].(string),
+		Summary:    jsonIssue.Fields["summary"].(string),
+		Labels:     strings.Join(labels, " "),
 	}
 
-	return ticket, nil
+	return issue, nil
 }

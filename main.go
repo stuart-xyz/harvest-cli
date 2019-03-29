@@ -2,17 +2,20 @@ package main
 
 import (
 	"bufio"
+	"encoding/base64"
 	"fmt"
 	"harvest-cli/model/harvest"
-	"harvest-cli/model/jira"
+	jiramodel "harvest-cli/model/jira"
 	"harvest-cli/services"
 	"log"
+	"net/http"
 	"os"
 	"os/user"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/coryb/oreo"
 	"github.com/docopt/docopt-go"
 )
 
@@ -20,7 +23,7 @@ func main() {
 	usage := `Harvest CLI.
 
     Usage:
-      harvest log <ticket_ref> <hours>
+      harvest log <issue_ref> <hours>
       harvest -h | --help
       harvest --version
 
@@ -39,7 +42,7 @@ func main() {
 
 func executeCommand(opts docopt.Opts) (err error) {
 	if isLog, _ := opts.Bool("log"); isLog {
-		ticketReference, err := opts.String("<ticket_ref>")
+		issueReference, err := opts.String("<issue_ref>")
 		if err != nil {
 			return err
 		}
@@ -47,25 +50,40 @@ func executeCommand(opts docopt.Opts) (err error) {
 		if err != nil {
 			return err
 		}
+
 		user, err := user.Current()
 		if err != nil {
 			return err
 		}
 
-		jiraTicket, err := services.GetJiraTicket(ticketReference)
+		config, err := services.GetConfig(user.HomeDir)
 		if err != nil {
 			return err
 		}
+
+		httpClient := oreo.New().WithPreCallback(
+			func(req *http.Request) (*http.Request, error) {
+				// need to set basic auth header with user@domain:api-token
+				authHeader := fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", config.JiraEmail, config.JiraApiToken))))
+				req.Header.Add("Authorization", authHeader)
+				return req, nil
+			},
+		)
 
 		taskIndex, taskIndexKeys, err := services.BuildTaskIndex(user.HomeDir)
 		if err != nil {
 			return err
 		}
 
-		jiraTicketToFuzzyMatch := jiraTicket
+		jiraIssue, err := services.GetIssue(httpClient, config, issueReference)
+		if err != nil {
+			return err
+		}
+
+		jiraIssueToFuzzyMatch := jiraIssue
 		var selectedTask harvest.Task
 		for {
-			tasks, err := services.FuzzyMatchTicket(taskIndex, taskIndexKeys, jiraTicketToFuzzyMatch)
+			tasks, err := services.FuzzyMatchIssue(taskIndex, taskIndexKeys, jiraIssueToFuzzyMatch)
 			if err != nil {
 				return err
 			}
@@ -84,33 +102,28 @@ func executeCommand(opts docopt.Opts) (err error) {
 				selectedTask = tasks[index]
 				break
 			} else {
-				jiraTicketToFuzzyMatch = jira.Ticket{
+				jiraIssueToFuzzyMatch = jiramodel.Issue{
 					Id:         "",
 					ProjectId:  "",
-					ProjectKey: jiraTicket.ProjectKey,
+					ProjectKey: jiraIssue.ProjectKey,
 					Summary:    strippedInput,
 					Labels:     "",
 				}
 			}
 		}
 
-		config, err := services.GetConfig(user.HomeDir)
-		if err != nil {
-			return err
-		}
-
 		timeBlock := harvest.TimeBlock{
 			Date:  time.Now().Format("2006-01-02"),
 			Hours: hours,
-			Note:  fmt.Sprintf("%s: %s", ticketReference, jiraTicket.Summary),
+			Note:  fmt.Sprintf("%s: %s", issueReference, jiraIssue.Summary),
 			ExternalRef: harvest.ExternalReference{
-				Id:      jiraTicket.Id,
-				GroupId: jiraTicket.ProjectId,
+				Id:      jiraIssue.Id,
+				GroupId: jiraIssue.ProjectId,
 				Permalink: fmt.Sprintf(
 					"%s/secure/RapidBoard.jspa?rapidView=35&projectKey=%s&modal=detail&selectedIssue=%s",
 					config.JiraEndpoint,
-					jiraTicket.ProjectKey,
-					ticketReference,
+					jiraIssue.ProjectKey,
+					issueReference,
 				),
 			},
 		}

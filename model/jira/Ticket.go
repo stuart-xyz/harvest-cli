@@ -1,6 +1,6 @@
 package jira
 
-type Ticket struct {
+type Issue struct {
 	Id         string
 	ProjectId  string
 	ProjectKey string
