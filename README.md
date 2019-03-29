@@ -9,7 +9,7 @@ Integrates with Jira to automate time recording against issues.
 
     ```
     go get github.com/stuart-xyz/harvest-cli
-    go install -o $BIN/harvest $GOPATH/src/github.com/stuart-xyz/harvest-cli/
+    cd $GOPATH/src/github.com/stuart-xyz/harvest-cli && go build -o $BIN/harvest
     ```
 
 2. Generate a [Jira API token](https://id.atlassian.com)
