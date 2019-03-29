@@ -4,9 +4,6 @@ import (
 	"bufio"
 	"encoding/base64"
 	"fmt"
-	"harvest-cli/model/harvest"
-	jiramodel "harvest-cli/model/jira"
-	"harvest-cli/services"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +11,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/stuart-xyz/harvest-cli/services"
+
+	"github.com/stuart-xyz/harvest-cli/model/harvest"
+
+	jiramodel "github.com/stuart-xyz/harvest-cli/model/jira"
 
 	"github.com/coryb/oreo"
 	"github.com/docopt/docopt-go"

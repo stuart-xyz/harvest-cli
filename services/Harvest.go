@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"harvest-cli/model/harvest"
-	jiramodel "harvest-cli/model/jira"
 	"net/http"
 	"strconv"
+
+	jiramodel "github.com/stuart-xyz/harvest-cli/model/jira"
+
+	"github.com/stuart-xyz/harvest-cli/model/harvest"
 
 	"github.com/schollz/closestmatch"
 )

@@ -1,8 +1,9 @@
 package services
 
 import (
-	jiramodel "harvest-cli/model/jira"
 	"strings"
+
+	jiramodel "github.com/stuart-xyz/harvest-cli/model/jira"
 
 	"gopkg.in/Netflix-Skunkworks/go-jira.v1"
 )

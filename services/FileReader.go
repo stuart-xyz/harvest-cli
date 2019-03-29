@@ -3,11 +3,12 @@ package services
 import (
 	"encoding/csv"
 	"fmt"
-	"harvest-cli/model/harvest"
 	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
+
+	"github.com/stuart-xyz/harvest-cli/model/harvest"
 
 	"gopkg.in/yaml.v2"
 )
