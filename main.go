@@ -64,7 +64,10 @@ func executeCommand(opts docopt.Opts) (err error) {
 		httpClient := oreo.New().WithPreCallback(
 			func(req *http.Request) (*http.Request, error) {
 				// need to set basic auth header with user@domain:api-token
-				authHeader := fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", config.JiraEmail, config.JiraApiToken))))
+				authHeader := fmt.Sprintf(
+					"Basic %s",
+					base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", config.JiraEmail, config.JiraApiToken))),
+				)
 				req.Header.Add("Authorization", authHeader)
 				return req, nil
 			},
@@ -136,5 +139,5 @@ func executeCommand(opts docopt.Opts) (err error) {
 		fmt.Printf("Response status code %d\n", statusCode)
 	}
 
-	return
+	return nil
 }
