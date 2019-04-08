@@ -26,7 +26,8 @@ func main() {
 	usage := `Harvest CLI.
 
     Usage:
-      harvest log <issue_ref> <hours>
+			harvest log <issue_ref> <hours>
+			harvest log <hours>
       harvest -h | --help
       harvest --version
 
@@ -47,7 +48,7 @@ func executeCommand(opts docopt.Opts) (err error) {
 	if isLog, _ := opts.Bool("log"); isLog {
 		issueReference, err := opts.String("<issue_ref>")
 		if err != nil {
-			return err
+			issueReference = ""
 		}
 		hours, err := opts.Float64("<hours>")
 		if err != nil {
@@ -81,12 +82,23 @@ func executeCommand(opts docopt.Opts) (err error) {
 			return err
 		}
 
-		jiraIssue, err := services.GetIssue(httpClient, config, issueReference)
-		if err != nil {
-			return err
+		var jiraIssue *jiramodel.Issue
+
+		if issueReference != "" {
+			jiraIssueResponse, err := services.GetIssue(httpClient, config, issueReference)
+			jiraIssue = &jiraIssueResponse
+			if err != nil {
+				return err
+			}
 		}
 
-		jiraIssueToFuzzyMatch := jiraIssue
+		var jiraIssueToFuzzyMatch jiramodel.Issue
+		if jiraIssue == nil {
+			jiraIssueToFuzzyMatch = jiramodel.Issue{}
+		} else {
+			jiraIssueToFuzzyMatch = *jiraIssue
+		}
+
 		var selectedTask harvest.Task
 		for {
 			tasks, err := services.FuzzyMatchIssue(taskIndex, taskIndexKeys, jiraIssueToFuzzyMatch)
@@ -108,21 +120,27 @@ func executeCommand(opts docopt.Opts) (err error) {
 				selectedTask = tasks[index]
 				break
 			} else {
+				var projectKey string
+				if jiraIssue != nil {
+					projectKey = jiraIssue.ProjectKey
+				}
 				jiraIssueToFuzzyMatch = jiramodel.Issue{
 					Id:         "",
 					ProjectId:  "",
-					ProjectKey: jiraIssue.ProjectKey,
+					ProjectKey: projectKey,
 					Summary:    strippedInput,
 					Labels:     "",
 				}
 			}
 		}
 
-		timeBlock := harvest.TimeBlock{
-			Date:  time.Now().Format("2006-01-02"),
-			Hours: hours,
-			Note:  fmt.Sprintf("%s: %s", issueReference, jiraIssue.Summary),
-			ExternalRef: harvest.ExternalReference{
+		var note *string
+		var externalRef *harvest.ExternalReference
+
+		if jiraIssue != nil {
+			noteString := fmt.Sprintf("%s: %s", issueReference, jiraIssue.Summary)
+			note = &noteString
+			externalRef = &harvest.ExternalReference{
 				Id:      jiraIssue.Id,
 				GroupId: jiraIssue.ProjectId,
 				Permalink: fmt.Sprintf(
@@ -131,7 +149,14 @@ func executeCommand(opts docopt.Opts) (err error) {
 					jiraIssue.ProjectKey,
 					issueReference,
 				),
-			},
+			}
+		}
+
+		timeBlock := harvest.TimeBlock{
+			Date:        time.Now().Format("2006-01-02"),
+			Hours:       hours,
+			Note:        note,
+			ExternalRef: externalRef,
 		}
 
 		statusCode, err := services.LogTime(config, selectedTask, timeBlock)
