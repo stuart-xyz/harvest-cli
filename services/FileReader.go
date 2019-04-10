@@ -24,6 +24,8 @@ func GetConfig(homeDir string) (config Config, err error) {
 		return Config{}, err
 	}
 
+	config.HomeDir = &homeDir
+
 	return config, nil
 }
 

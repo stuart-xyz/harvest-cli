@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
@@ -53,4 +54,27 @@ func LogTime(config Config, task harvest.Task, timeBlock harvest.TimeBlock) (sta
 	}
 
 	return resp.StatusCode, nil
+}
+
+func ViewLog(config Config, date string) (entries []harvest.LogEntry, err error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.harvestapp.com/v2/time_entries?from=%s&to=%s", date, date), nil)
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", config.HarvestApiToken))
+	req.Header.Add("Harvest-Account-Id", strconv.Itoa(config.HarvestAccountId))
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	var viewLogResponse harvest.ViewLogResponse
+	json.Unmarshal(body, &viewLogResponse)
+
+	return viewLogResponse.Entries, nil
 }
