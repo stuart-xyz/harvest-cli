@@ -2,6 +2,8 @@ package cli
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 	"time"
 
 	"github.com/docopt/docopt-go"
@@ -26,9 +28,15 @@ func View(config services.Config, opts docopt.Opts) (err error) {
 		return err
 	}
 
+	const padding = 3
+	writer := tabwriter.NewWriter(os.Stdout, 0, 0, padding, ' ', tabwriter.Debug)
+	fmt.Fprintln(writer, "Project\t Task\t Hours\t Note")
+	fmt.Fprintln(writer, "----\t ----\t ----\t ----")
 	for _, entry := range logEntries {
-		fmt.Println(entry)
+		fmt.Fprintln(writer, fmt.Sprintf("%s\t %s\t %.1f\t %s", entry.Task.Name, entry.Project.Name, entry.Hours, entry.Note))
 	}
+	writer.Flush()
+	fmt.Println()
 
 	return nil
 }
