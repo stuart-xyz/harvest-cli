@@ -14,9 +14,9 @@ func main() {
 	usage := `Harvest CLI.
 
     Usage:
-      harvest log <issue_ref> <hours>
-      harvest log <hours>
       harvest view [--yesterday]
+      harvest log <hours> [--yesterday]
+      harvest log <issue_ref> <hours> [--yesterday]
       harvest -h | --help
       harvest --version
 
@@ -44,10 +44,10 @@ func executeCommand(opts docopt.Opts) (err error) {
 		return err
 	}
 
-	if isLog, _ := opts.Bool("log"); isLog {
-		cli.Log(config, opts)
-	} else if isView, _ := opts.Bool("view"); isView {
+	if isViewCommand, _ := opts.Bool("view"); isViewCommand {
 		cli.View(config, opts)
+	} else if isLogCommand, _ := opts.Bool("log"); isLogCommand {
+		cli.Log(config, opts)
 	}
 
 	return nil

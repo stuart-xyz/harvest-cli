@@ -34,9 +34,9 @@ Integrates with Jira to automate time recording against issues.
 
 ```
 Usage:
-  harvest log <issue_ref> <hours>
-  harvest log <hours>
   harvest view [--yesterday]
+  harvest log <hours> [--yesterday]
+  harvest log <issue_ref> <hours> [--yesterday]
   harvest -h | --help
   harvest --version
 

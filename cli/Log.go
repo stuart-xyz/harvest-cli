@@ -26,6 +26,10 @@ func Log(config services.Config, opts docopt.Opts) (err error) {
 	if err != nil {
 		return err
 	}
+	logForYesterday, err := opts.Bool("--yesterday")
+	if err != nil {
+		return err
+	}
 
 	httpClient := oreo.New().WithPreCallback(
 		func(req *http.Request) (*http.Request, error) {
@@ -114,8 +118,15 @@ func Log(config services.Config, opts docopt.Opts) (err error) {
 		}
 	}
 
+	var date string
+	if logForYesterday {
+		date = time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+	} else {
+		date = time.Now().Format("2006-01-02")
+	}
+
 	timeBlock := harvest.TimeBlock{
-		Date:        time.Now().Format("2006-01-02"),
+		Date:        date,
 		Hours:       hours,
 		Note:        note,
 		ExternalRef: externalRef,
