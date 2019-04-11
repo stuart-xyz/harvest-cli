@@ -20,7 +20,7 @@ func FuzzyMatchIssue(taskIndex map[string]harvest.Task, taskIndexKeys []string, 
 	closestMatchModel := closestmatch.New(taskIndexKeys, bagSizes)
 	closestMatches := closestMatchModel.ClosestN(fmt.Sprintf("%s %s %s", issue.ProjectKey, issue.Summary, issue.Labels), 3)
 
-	closestMatchingTasks := []harvest.Task{}
+	var closestMatchingTasks []harvest.Task
 	for _, key := range closestMatches {
 		closestMatchingTasks = append(closestMatchingTasks, taskIndex[key])
 	}
@@ -37,13 +37,17 @@ func LogTime(config Config, task harvest.Task, timeBlock harvest.TimeBlock) (sta
 		Note:        timeBlock.Note,
 		ExternalRef: timeBlock.ExternalRef,
 	}
-	json, err := json.Marshal(logTimeRequest)
+	requestJson, err := json.Marshal(logTimeRequest)
 	if err != nil {
 		return -1, err
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", "https://api.harvestapp.com/v2/time_entries", bytes.NewBuffer(json))
+	req, err := http.NewRequest("POST", "https://api.harvestapp.com/v2/time_entries", bytes.NewBuffer(requestJson))
+	if err != nil {
+		return -1, err
+	}
+
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", config.HarvestApiToken))
 	req.Header.Add("Harvest-Account-Id", strconv.Itoa(config.HarvestAccountId))
@@ -59,6 +63,10 @@ func LogTime(config Config, task harvest.Task, timeBlock harvest.TimeBlock) (sta
 func ViewLog(config Config, date string) (entries []harvest.LogEntry, err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://api.harvestapp.com/v2/time_entries?from=%s&to=%s", date, date), nil)
+	if err != nil {
+		return nil, err
+	}
+
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", config.HarvestApiToken))
 	req.Header.Add("Harvest-Account-Id", strconv.Itoa(config.HarvestAccountId))
 
@@ -74,7 +82,10 @@ func ViewLog(config Config, date string) (entries []harvest.LogEntry, err error)
 	}
 
 	var viewLogResponse harvest.ViewLogResponse
-	json.Unmarshal(body, &viewLogResponse)
+	err = json.Unmarshal(body, &viewLogResponse)
+	if err != nil {
+		return nil, err
+	}
 
 	return viewLogResponse.Entries, nil
 }

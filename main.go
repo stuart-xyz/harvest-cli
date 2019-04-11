@@ -1,8 +1,8 @@
 package main
 
 import (
+	"errors"
 	"log"
-	"os"
 	"os/user"
 
 	"github.com/docopt/docopt-go"
@@ -24,31 +24,30 @@ func main() {
       -h --help     Show this screen.
       --version     Show version.`
 
-	opts, _ := docopt.ParseArgs(usage, nil, "0.1")
+	opts, _ := docopt.ParseArgs(usage, nil, "1.0")
 
 	err := executeCommand(opts)
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(1)
 	}
 }
 
 func executeCommand(opts docopt.Opts) (err error) {
-	user, err := user.Current()
+	currentUser, err := user.Current()
 	if err != nil {
 		return err
 	}
 
-	config, err := services.GetConfig(user.HomeDir)
+	config, err := services.GetConfig(currentUser.HomeDir)
 	if err != nil {
 		return err
 	}
 
 	if isViewCommand, _ := opts.Bool("view"); isViewCommand {
-		cli.View(config, opts)
+		return cli.View(config, opts)
 	} else if isLogCommand, _ := opts.Bool("log"); isLogCommand {
-		cli.Log(config, opts)
+		return cli.Log(config, opts)
 	}
 
-	return nil
+	return errors.New("unrecognised command")
 }
