@@ -29,6 +29,8 @@ Integrates with Jira to automate time recording against issues.
     ```
     <project_id>,<task_id>,<task_description>
     ```
+    
+    You may need to ask your Harvest administrator to provide this list. Alternatively, [install HCL](https://github.com/zenhob/hcl) and run `hcl tasks` (however, this relies on the [now-deprecated V1 Harvest API](https://help.getharvest.com/api-v1/)). 
 
 ## Usage
 
